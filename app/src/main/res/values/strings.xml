@@ -10,5 +10,12 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="terms_text">By signing up you agree to our <b>Terms, Privacy Policy,</b> and <b>Cookie Use</b></string>
+    <string name="forgot_your_password_reset_your_password">Forgot your password?<b>Reset your password</b></string>
+    <string name="already_have_an_account_log_in">Already have an account?<b> Log In</b></string>
+    <string name="don_t_have_an_account_join">Don\'t have an account?<b>Join</b></string>
+    <string name="title_activity_bottom_navigatio">Bottom_Navigatio_Activity</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
 
 </resources>

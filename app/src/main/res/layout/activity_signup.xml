@@ -20,7 +20,6 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="4dp"
             android:text="Create an account"
             android:textColor="@color/black"
             android:textSize="32sp"
@@ -30,7 +29,6 @@
             android:id="@+id/tvSubTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
             android:layout_marginBottom="26dp"
             android:text="Let’s create your account."
             android:textColor="@color/gray"
@@ -72,13 +70,30 @@
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="5dp"
+            android:layout_marginBottom="16dp"
             android:hint="Password"
             app:boxStrokeColor="@color/gray"
             app:endIconMode="password_toggle">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:textColor="@color/black"
+                android:textColorHint="@color/gray" />
+        </com.google.android.material.textfield.TextInputLayout>
+        <!-- Conform Password -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:hint="confirm Password"
+            app:boxStrokeColor="@color/gray"
+            app:endIconMode="password_toggle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etconfirmPassword"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
@@ -93,7 +108,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:text="@string/terms_text"
-            android:textColor="@color/gray"
+            android:textColor="@color/black"
             android:textSize="16sp" />
 
         <!-- Sign Up Button (Disabled by default) -->
@@ -178,7 +193,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:text="Already have an account? Log In"
+            android:text="@string/already_have_an_account_log_in"
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="14sp" />

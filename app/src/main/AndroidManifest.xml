@@ -13,6 +13,13 @@
         android:theme="@style/Theme.Stylo"
         tools:targetApi="31">
         <activity
+            android:name=".Bottom_Navigatio_Activity"
+            android:exported="false"
+            android:label="@string/title_activity_bottom_navigatio" />
+        <activity
+            android:name=".ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
             android:name=".SignupActivity"
             android:exported="false" />
         <activity

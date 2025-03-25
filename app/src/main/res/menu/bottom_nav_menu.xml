@@ -1,19 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/navigation_home"
-        android:icon="@drawable/ic_home_black_24dp"
+        android:icon="@drawable/home"
         android:title="@string/title_home" />
 
     <item
-        android:id="@+id/navigation_dashboard"
-        android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="@string/title_dashboard" />
+        android:id="@+id/navigation_Search"
+        android:icon="@drawable/search"
+        app:iconTint="@color/black"
+        android:title="@string/title_Search" />
 
     <item
-        android:id="@+id/navigation_notifications"
-        android:icon="@drawable/ic_notifications_black_24dp"
-        android:title="@string/title_notifications" />
+        android:id="@+id/navigation_Save"
+        android:icon="@drawable/heart"
+        app:iconTint="@color/black"
+        android:title="Save" />
+    <item
+        android:id="@+id/navigation_Cart"
+        android:icon="@drawable/cart"
+        app:iconTint="@color/black"
+        android:title="Cart" />
+    <item
+        android:id="@+id/navigation_Account"
+        android:icon="@drawable/user"
+        app:iconTint="@color/black"
+        android:title="Account" />
 
 </menu>

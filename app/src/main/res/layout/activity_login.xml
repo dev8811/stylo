@@ -85,12 +85,12 @@
 
         <!-- Sign Up Button (Disabled by default) -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSignUp"
+            android:id="@+id/btnLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="26dp"
-            android:enabled="false"
             android:text="Login"
+            android:backgroundTint="@color/black"
             android:textColor="@color/white"
             app:cornerRadius="8dp" />
 
@@ -161,7 +161,7 @@
 
         <!-- Login Redirect -->
         <TextView
-            android:id="@+id/tvLogin"
+            android:id="@+id/tvSignup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

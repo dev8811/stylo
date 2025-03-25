@@ -12,14 +12,24 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.Stylo.stylo.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/navigation_Search"
+        android:name="com.Stylo.stylo.ui.search.SearchFragment"
+        android:label="@string/title_Search"
+        tools:layout="@layout/fragment_search" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.Stylo.stylo.ui.notifications.NotificationsFragment"
+        android:id="@+id/navigation_Save"
+        android:name="com.Stylo.stylo.ui.save.SaveFragment"
         android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        tools:layout="@layout/fragment_save" />
+    <fragment
+        android:id="@+id/navigation_Cart"
+        android:name="com.Stylo.stylo.ui.save.SaveFragment"
+        android:label="@string/title_notifications"
+        tools:layout="@layout/fragment_cart" />
+    <fragment
+        android:id="@+id/navigation_Account"
+        android:name="com.Stylo.stylo.ui.save.SaveFragment"
+        android:label="@string/title_notifications"
+        tools:layout="@layout/fragment_account" />
 </navigation>

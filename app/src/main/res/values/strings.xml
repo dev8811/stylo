@@ -15,7 +15,9 @@
     <string name="don_t_have_an_account_join">Don\'t have an account?<b>Join</b></string>
     <string name="title_activity_bottom_navigatio">Bottom_Navigatio_Activity</string>
     <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
+    <string name="title_Search">Search</string>
     <string name="title_notifications">Notifications</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 
 </resources>

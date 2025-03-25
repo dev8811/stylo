@@ -1,17 +1,15 @@
-package com.Stylo.stylo.ui.home
+package com.Stylo.stylo.ui.save
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
-import com.Stylo.stylo.databinding.FragmentHomeBinding
+import com.Stylo.stylo.databinding.FragmentSaveBinding
 
-class HomeFragment : Fragment() {
+class SaveFragment : Fragment() {
 
-    private var _binding: FragmentHomeBinding? = null
+    private var _binding: FragmentSaveBinding? = null
 
     // This property is only valid between onCreateView and
     // onDestroyView.
@@ -22,7 +20,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        _binding = FragmentSaveBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
         return root

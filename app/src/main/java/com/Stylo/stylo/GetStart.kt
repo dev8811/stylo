@@ -19,7 +19,7 @@ class GetStart : AppCompatActivity() {
 
         // Set click listener with transition animation
         binding.getStartedButton.setOnClickListener {
-            val intent = Intent(this, SignupActivity::class.java)
+            val intent = Intent(this, LoginActivity::class.java)
 
 
             // Transition animation

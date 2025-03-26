@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "985980337461",
+    "project_id": "stylo-9fb8b",
+    "storage_bucket": "stylo-9fb8b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:985980337461:android:977f66fb446949c112a07c",
+        "android_client_info": {
+          "package_name": "com.Stylo.stylo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "985980337461-672t5a7drrc2vneaitsla8n3t95q9bsl.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.Stylo.stylo",
+            "certificate_hash": "6feff58c38f481b5dd79f09f13885755083c430f"
+          }
+        },
+        {
+          "client_id": "985980337461-bfg13hlq93qb3ike9dc54dkcptpha4l9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.Stylo.stylo",
+            "certificate_hash": "3a425e192572868bc5483594739405283f2ade22"
+          }
+        },
+        {
+          "client_id": "985980337461-2tfkupn50ggjecogd8d7vfujuu7sm52e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCwHdxeQr1ii2eNNAsqRTHhA671KiCHpT8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "985980337461-2tfkupn50ggjecogd8d7vfujuu7sm52e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

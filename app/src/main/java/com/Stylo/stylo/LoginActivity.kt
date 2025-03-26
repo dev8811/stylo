@@ -64,7 +64,7 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<LocalResponse>, t: Throwable) {
+            override fun onFailure(call: Call<LocalResponse >, t: Throwable) {
                 // Hide loading indicator and enable button
               //  binding.progressBar.visibility = View.GONE
                 binding.btnLogin.isEnabled = true

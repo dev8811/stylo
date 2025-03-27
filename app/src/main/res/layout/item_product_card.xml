@@ -47,6 +47,11 @@
             android:textSize="14sp"
             android:textStyle="bold"
             android:textColor="@android:color/black" />
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@android:color/white">
 
         <!-- Product Price -->
         <TextView
@@ -58,6 +63,17 @@
             android:text="$1,190"
             android:textSize="14sp"
             android:textColor="@android:color/black" />
+        <!-- Product Price -->
+        <TextView
+            android:id="@+id/product_Disscount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:paddingBottom="8dp"
+            android:text="-52%"
+            android:textColor="@android:color/holo_red_light"
+            android:textSize="14sp"/>
 
+    </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

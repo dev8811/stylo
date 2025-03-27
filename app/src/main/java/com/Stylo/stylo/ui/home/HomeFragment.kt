@@ -4,21 +4,27 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.Stylo.stylo.R
+import com.Stylo.stylo.RetrofitApi.ApiClient
+import com.Stylo.stylo.RetrofitApi.FetchProduct
+import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.adapter.CategoryAdapter
-import com.Stylo.stylo.adapter.Product
 import com.Stylo.stylo.adapter.ProductAdapter
 import com.Stylo.stylo.databinding.FragmentHomeBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var adapter: ProductAdapter
+    private var adapter: ProductAdapter? = null
+    private val productList = mutableListOf<Product>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,19 +32,19 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
 
         setupCategoryRecyclerView()
         setupProductRecyclerView()
 
-        return root
+        return binding.root
     }
 
     private fun setupCategoryRecyclerView() {
-        val categoryList = listOf("All","Tshirts", "Jeans", "Shoes", "Jackets")
+        val categoryList = listOf("All", "Tshirts", "Jeans", "Shoes", "Jackets")
         val categoryAdapter = CategoryAdapter(categoryList)
 
-        binding.categoryTabs.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        binding.categoryTabs.layoutManager =
+            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         binding.categoryTabs.adapter = categoryAdapter
     }
 
@@ -46,27 +52,41 @@ class HomeFragment : Fragment() {
         binding.productGrid.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.productGrid.setHasFixedSize(true)
 
-        val productList = listOf(
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.sample_product, "Regular Fit Polo", "$1,190", false),
-            Product(R.drawable.heart, "Casual T-Shirt", "$990", false),
-            Product(R.drawable.home, "Slim Fit Jeans", "$2,190", false),
-            Product(R.drawable.bg_vector, "Sports Shoes", "$3,290", false),
-            Product(R.drawable.search, "Leather Jacket", "$4,500", false),
-        )
-
         adapter = ProductAdapter(productList)
         binding.productGrid.adapter = adapter
+
+        fetchProducts()
+    }
+
+    private fun fetchProducts() {
+        ApiClient.apiService.getProducts().enqueue(object : Callback<FetchProduct> {
+            override fun onResponse(call: Call<FetchProduct>, response: Response<FetchProduct>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { fetchedData ->
+                        productList.clear()
+                        productList.addAll(fetchedData.products)
+                        adapter?.notifyDataSetChanged()
+                    } ?: showToast("No products found")
+                } else {
+                    showToast("Failed to load products: ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<FetchProduct>, t: Throwable) {
+                showToast("Error fetching products: ${t.localizedMessage}")
+            }
+        })
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        adapter = null // Prevent memory leaks
     }
 }
+
+

@@ -3,10 +3,12 @@ package com.Stylo.stylo.adapter
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.Stylo.stylo.R
+import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.databinding.ItemProductCardBinding
 
-class ProductAdapter(private val productList: List<Product>) :
+class ProductAdapter(private val productList: MutableList<Product>) :
     RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     inner class ProductViewHolder(val binding: ItemProductCardBinding) :
@@ -23,20 +25,33 @@ class ProductAdapter(private val productList: List<Product>) :
         val product = productList[position]
         val binding = holder.binding
 
-        binding.productImage.setImageResource(product.imageResId)
-        binding.productName.text = product.name
-        binding.productPrice.text = product.price
+        // Load product image from URL
+        Glide.with(binding.productImage.context)
+            .load(product.productimage) // URL from API
+            .placeholder(R.drawable.placeholder_image) // Fallback image
+            .error(R.drawable.placeholder_image) // Error image
+            .into(binding.productImage)
 
-        binding.favoriteIcon.setImageResource(
-            if (product.isFavorite) R.drawable.heart else R.drawable.home
-        )
+        binding.productName.text = product.productname
+        binding.productPrice.text = "₹${product.originalprice}"
 
-        // Toggle favorite icon on click
+        // Toggle favorite icon
+        val isFavorite = holder.itemView.tag as? Boolean ?: false
+        binding.favoriteIcon.setImageResource(if (isFavorite) R.drawable.heart_fill else R.drawable.heart)
+
         binding.favoriteIcon.setOnClickListener {
-            product.isFavorite = !product.isFavorite
-            notifyItemChanged(position)
+            val newFavoriteState = !(holder.itemView.tag as? Boolean ?: false)
+            holder.itemView.tag = newFavoriteState
+            binding.favoriteIcon.setImageResource(if (newFavoriteState) R.drawable.heart_fill else R.drawable.heart)
         }
     }
 
     override fun getItemCount(): Int = productList.size
+
+    // Update product list dynamically
+    fun updateProducts(newProducts: List<Product>) {
+        productList.clear()
+        productList.addAll(newProducts)
+        notifyDataSetChanged()
+    }
 }

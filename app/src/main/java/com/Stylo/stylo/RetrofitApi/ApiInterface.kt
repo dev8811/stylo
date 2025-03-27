@@ -14,4 +14,8 @@ interface ApiInterface {
     @Headers("Content-Type: application/json")
     @POST("signup.php")
     fun signupUser(@Body request: SignupRequest): Call<LocalResponse>
+
+    @Headers("Content-Type: application/json")
+    @POST("FetchProduct.php")
+    fun getProducts(): Call<FetchProduct>
 }

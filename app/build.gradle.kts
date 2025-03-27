@@ -69,7 +69,9 @@ dependencies {
     implementation ("com.google.android.gms:play-services-auth:21.3.0")
     implementation ("com.google.firebase:firebase-core:21.1.1")
 
-
+    // OkHttp (for logging API requests & responses)
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
     implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
 
 }

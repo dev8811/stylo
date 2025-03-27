@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -9,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.Stylo.stylo"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -62,5 +63,15 @@ dependencies {
     // Coroutines
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
+    // Signin
+    implementation ("com.google.firebase:firebase-auth:23.2.0")
+    implementation ("com.google.android.gms:play-services-auth:21.3.0")
+    implementation ("com.google.firebase:firebase-core:21.1.1")
+
+    // OkHttp (for logging API requests & responses)
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
+    implementation ("com.squareup.okhttp3:logging-interceptor:4.10.0")
+    implementation(platform("com.google.firebase:firebase-bom:33.11.0"))
 
 }

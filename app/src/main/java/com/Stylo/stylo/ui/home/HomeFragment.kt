@@ -1,6 +1,7 @@
 package com.Stylo.stylo.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +27,10 @@ class HomeFragment : Fragment() {
     private var adapter: ProductAdapter? = null
     private val productList = mutableListOf<Product>()
 
+    private val categories = listOf("All", "Tshirts", "Jeans", "Shoes", "Jackets")
+    private val categoryIds = listOf("0", "1", "2", "3", "4") // Replace with actual category IDs
+    private var selectedCategoryId = "0" // Default category (All)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -40,8 +45,10 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupCategoryRecyclerView() {
-        val categoryList = listOf("All", "Tshirts", "Jeans", "Shoes", "Jackets")
-        val categoryAdapter = CategoryAdapter(categoryList)
+        val categoryAdapter = CategoryAdapter(categories) { position ->
+            selectedCategoryId = categoryIds[position] // Set selected category ID
+            fetchProducts(selectedCategoryId)
+        }
 
         binding.categoryTabs.layoutManager =
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
@@ -55,11 +62,11 @@ class HomeFragment : Fragment() {
         adapter = ProductAdapter(productList)
         binding.productGrid.adapter = adapter
 
-        fetchProducts()
+        fetchProducts(selectedCategoryId) // Load products initially
     }
 
-    private fun fetchProducts() {
-        ApiClient.apiService.getProducts().enqueue(object : Callback<FetchProduct> {
+    private fun fetchProducts(categoryId: String) {
+        ApiClient.apiService.getProducts(categoryId).enqueue(object : Callback<FetchProduct> {
             override fun onResponse(call: Call<FetchProduct>, response: Response<FetchProduct>) {
                 if (response.isSuccessful) {
                     response.body()?.let { fetchedData ->
@@ -74,6 +81,7 @@ class HomeFragment : Fragment() {
 
             override fun onFailure(call: Call<FetchProduct>, t: Throwable) {
                 showToast("Error fetching products: ${t.localizedMessage}")
+                Log.e("Error fetching products", "${t.localizedMessage}")
             }
         })
     }
@@ -88,5 +96,3 @@ class HomeFragment : Fragment() {
         adapter = null // Prevent memory leaks
     }
 }
-
-

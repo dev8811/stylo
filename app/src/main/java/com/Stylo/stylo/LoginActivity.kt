@@ -69,7 +69,7 @@ class LoginActivity : AppCompatActivity() {
             override fun onFailure(call: Call<LocalResponse>, t: Throwable) {
                 binding.btnLogin.isEnabled = true
                 Toast.makeText(this@LoginActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                Log.e("Login error", "${t.message}")
+                Log.d("Login_error", "${t.message}")
             }
         })
     }

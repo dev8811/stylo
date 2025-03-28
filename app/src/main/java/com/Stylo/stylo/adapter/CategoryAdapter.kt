@@ -6,10 +6,12 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.Stylo.stylo.databinding.ItemCategoryTabBinding
 
-class CategoryAdapter(private val categoryList: List<String>) :
-    RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
+class CategoryAdapter(
+    private val categoryList: List<String>,
+    private val onCategorySelected: (Int) -> Unit // Callback for category selection
+) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
-    private var selectedPosition = -1  // Track selected position
+    private var selectedPosition = 0 // Default selection
 
     inner class CategoryViewHolder(val binding: ItemCategoryTabBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -28,7 +30,8 @@ class CategoryAdapter(private val categoryList: List<String>) :
             // Handle click event
             binding.textViewCategory.setOnClickListener {
                 selectedPosition = adapterPosition  // Update selection
-                notifyDataSetChanged()  // Refresh RecyclerView
+                notifyDataSetChanged() // Refresh RecyclerView
+                onCategorySelected(selectedPosition) // Notify HomeFragment
             }
         }
     }

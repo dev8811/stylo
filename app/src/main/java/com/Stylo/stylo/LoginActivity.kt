@@ -1,5 +1,6 @@
 package com.Stylo.stylo
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -26,6 +27,7 @@ class LoginActivity : AppCompatActivity() {
             val intent = Intent(this, SignupActivity::class.java)
             startActivity(intent)
         }
+
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
@@ -41,22 +43,22 @@ class LoginActivity : AppCompatActivity() {
     private fun loginUser(email: String, password: String) {
         val request = LoginRequest(email, password)
 
-        // Show loading indicator and disable button
-       // binding.progressBar.visibility = View.VISIBLE
         binding.btnLogin.isEnabled = false
 
         ApiClient.apiService.loginUser(request).enqueue(object : Callback<LocalResponse> {
             override fun onResponse(call: Call<LocalResponse>, response: Response<LocalResponse>) {
-                // Hide loading indicator and enable button
-             //   binding.progressBar.visibility = View.GONE
                 binding.btnLogin.isEnabled = true
 
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
                     if (loginResponse != null) {
                         Toast.makeText(this@LoginActivity, loginResponse.message, Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@LoginActivity, Bottom_Navigatio_Activity::class.java)
-                        startActivity(intent)
+
+                        // Save login state
+                        saveUserLoginState(email)
+
+                        // Navigate to home screen
+                        navigateToHome()
                     }
                 } else {
                     val errorMessage = response.errorBody()?.string() ?: "Login failed"
@@ -64,14 +66,27 @@ class LoginActivity : AppCompatActivity() {
                 }
             }
 
-            override fun onFailure(call: Call<LocalResponse >, t: Throwable) {
-                // Hide loading indicator and enable button
-              //  binding.progressBar.visibility = View.GONE
+            override fun onFailure(call: Call<LocalResponse>, t: Throwable) {
                 binding.btnLogin.isEnabled = true
-
                 Toast.makeText(this@LoginActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                Log.e("Login error", "${t.message}")
+                Log.d("Login_error", "${t.message}")
             }
         })
+    }
+
+    // Function to save login state
+    private fun saveUserLoginState(email: String) {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("isLoggedIn", true)
+        editor.putString("userEmail", email)
+        editor.apply()
+    }
+
+    // Function to navigate to home screen
+    private fun navigateToHome() {
+        val intent = Intent(this, Bottom_Navigatio_Activity::class.java)
+        startActivity(intent)
+        finish() // Finish login activity to prevent going back
     }
 }

@@ -1,5 +1,8 @@
 package com.Stylo.stylo.ui.home
 
+import ProductAdapter
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -13,7 +16,6 @@ import com.Stylo.stylo.RetrofitApi.ApiClient
 import com.Stylo.stylo.RetrofitApi.FetchProduct
 import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.adapter.CategoryAdapter
-import com.Stylo.stylo.adapter.ProductAdapter
 import com.Stylo.stylo.databinding.FragmentHomeBinding
 import retrofit2.Call
 import retrofit2.Callback
@@ -59,7 +61,12 @@ class HomeFragment : Fragment() {
         binding.productGrid.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.productGrid.setHasFixedSize(true)
 
-        adapter = ProductAdapter(productList)
+        adapter = ProductAdapter(productList) { product ->
+            val intent = Intent(requireContext(), Product_detail_Activity::class.java).apply {
+                putExtra("PRODUCT", product)
+            }
+            startActivity(intent)
+        }
         binding.productGrid.adapter = adapter
 
         fetchProducts(selectedCategoryId) // Load products initially
@@ -67,6 +74,7 @@ class HomeFragment : Fragment() {
 
     private fun fetchProducts(categoryId: String) {
         ApiClient.apiService.getProducts(categoryId).enqueue(object : Callback<FetchProduct> {
+            @SuppressLint("NotifyDataSetChanged")
             override fun onResponse(call: Call<FetchProduct>, response: Response<FetchProduct>) {
                 if (response.isSuccessful) {
                     response.body()?.let { fetchedData ->
@@ -81,7 +89,7 @@ class HomeFragment : Fragment() {
 
             override fun onFailure(call: Call<FetchProduct>, t: Throwable) {
                 showToast("Error fetching products: ${t.localizedMessage}")
-                Log.e("Error fetching products", "${t.localizedMessage}")
+                Log.e("HomeFragment", "Error fetching products: ${t.localizedMessage}")
             }
         })
     }

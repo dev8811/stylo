@@ -51,7 +51,7 @@ class LoginActivity : AppCompatActivity() {
 
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
-                    if (loginResponse != null) {
+                    if (loginResponse != null && loginResponse.status) {
                         Toast.makeText(this@LoginActivity, loginResponse.message, Toast.LENGTH_SHORT).show()
 
                         // Save login state
@@ -59,6 +59,11 @@ class LoginActivity : AppCompatActivity() {
 
                         // Navigate to home screen
                         navigateToHome()
+                    }
+
+                    else{
+                        val errorMessage = response.errorBody()?.string() ?: "Login failed"
+                        Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     val errorMessage = response.errorBody()?.string() ?: "Login failed"

@@ -8,7 +8,8 @@ import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.databinding.ItemProductCardBinding
 import com.bumptech.glide.Glide
 
-class ProductAdapter(
+class
+ProductAdapter(
     private val products: List<Product>,
     private val onItemClick: (Product) -> Unit
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {

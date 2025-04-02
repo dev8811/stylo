@@ -22,7 +22,13 @@ class Product_detail_Activity : AppCompatActivity() {
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val product = intent.getParcelableExtra("PRODUCT", Product::class.java)
+        //val product = this.intent.getParcelableExtra("PRODUCT", Product::class.java)
+        val product: Product? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra("PRODUCT", Product::class.java)
+        } else {
+            @Suppress("DEPRECATION") // Suppress warning for deprecated method
+            intent.getParcelableExtra("PRODUCT") as? Product
+        }
 
         if (product == null) {
             Toast.makeText(this, "Product details not available", Toast.LENGTH_SHORT).show()

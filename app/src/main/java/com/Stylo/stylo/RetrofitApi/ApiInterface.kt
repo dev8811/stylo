@@ -19,5 +19,5 @@ interface ApiInterface {
 
     @FormUrlEncoded
     @POST("fetchProduct.php")
-    fun getProducts(@Field("categoryid") categoryId: String): Call<FetchProduct>
+    fun getProducts(@Field("categoryid") categoryId: String): Call<FatchProduct>
 }

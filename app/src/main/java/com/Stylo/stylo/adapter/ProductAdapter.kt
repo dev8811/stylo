@@ -15,8 +15,15 @@ class ProductAdapter(
             binding.productName.text = product.productname
             binding.productPrice.text = "₹${product.originalprice}"
 
+            // Get the first image from the list if available, otherwise fallback to productimage
+            val imageToLoad = if (product.all_images.isNotEmpty()) {
+                product.all_images[0]
+            } else {
+                product.productimage
+            }
+
             Glide.with(binding.root.context)
-                .load(product.productimage)
+                .load(imageToLoad)
                 .into(binding.productImage)
 
             binding.root.setOnClickListener { onItemClick(product) }

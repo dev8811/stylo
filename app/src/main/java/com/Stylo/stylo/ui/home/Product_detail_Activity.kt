@@ -60,14 +60,26 @@ class Product_detail_Activity : AppCompatActivity() {
     }
 
     private fun setupProductImagePager(product: Product) {
-        // For this example, we'll create a list of image URLs
-        // In a real app, this might come from your product model
-        val imageUrls = listOf(
-            product.productimage,
-            // Add more images if available, for example:
-            "${product.productimage}_1",
-            "${product.productimage}_2"
-        )
+        // Create a list to hold all image URLs
+        val imageUrls = mutableListOf<String>()
+
+        // Add all images from the all_images list
+        if (product.all_images.isNotEmpty()) {
+            imageUrls.addAll(product.all_images)
+        } else {
+            // Fallback to primary_image and productimage if all_images is empty
+            if (product.primary_image.isNotEmpty()) {
+                imageUrls.add(product.primary_image)
+            }
+            if (product.productimage.isNotEmpty() && product.productimage != product.primary_image) {
+                imageUrls.add(product.productimage)
+            }
+        }
+
+        // Ensure we have at least one image to display
+        if (imageUrls.isEmpty() && product.productimage.isNotEmpty()) {
+            imageUrls.add(product.productimage)
+        }
 
         // Set up the adapter
         val adapter = ProductImageAdapter(imageUrls)

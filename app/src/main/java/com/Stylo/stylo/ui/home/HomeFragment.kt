@@ -13,7 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.Stylo.stylo.RetrofitApi.ApiClient
-import com.Stylo.stylo.RetrofitApi.FetchProduct
+import com.Stylo.stylo.RetrofitApi.FatchProduct
 import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.adapter.CategoryAdapter
 import com.Stylo.stylo.databinding.FragmentHomeBinding
@@ -49,7 +49,7 @@ class HomeFragment : Fragment() {
     private fun setupCategoryRecyclerView() {
         val categoryAdapter = CategoryAdapter(categories) { position ->
             selectedCategoryId = categoryIds[position] // Set selected category ID
-            fetchProducts(selectedCategoryId)
+            FatchProducts(selectedCategoryId)
         }
 
         binding.categoryTabs.layoutManager =
@@ -69,13 +69,13 @@ class HomeFragment : Fragment() {
         }
         binding.productGrid.adapter = adapter
 
-        fetchProducts(selectedCategoryId) // Load products initially
+        FatchProducts(selectedCategoryId) // Load products initially
     }
 
-    private fun fetchProducts(categoryId: String) {
-        ApiClient.apiService.getProducts(categoryId).enqueue(object : Callback<FetchProduct> {
+    private fun FatchProducts(categoryId: String) {
+        ApiClient.apiService.getProducts(categoryId).enqueue(object : Callback<FatchProduct> {
             @SuppressLint("NotifyDataSetChanged")
-            override fun onResponse(call: Call<FetchProduct>, response: Response<FetchProduct>) {
+            override fun onResponse(call: Call<FatchProduct>, response: Response<FatchProduct>) {
                 if (response.isSuccessful) {
                     response.body()?.let { fetchedData ->
                         productList.clear()
@@ -87,7 +87,7 @@ class HomeFragment : Fragment() {
                 }
             }
 
-            override fun onFailure(call: Call<FetchProduct>, t: Throwable) {
+            override fun onFailure(call: Call<FatchProduct>, t: Throwable) {
                 showToast("Error fetching products: ${t.localizedMessage}")
                 Log.e("HomeFragment", "Error fetching products: ${t.localizedMessage}")
             }

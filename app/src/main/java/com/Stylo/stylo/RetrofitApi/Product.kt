@@ -14,7 +14,8 @@ data class Product(
     val productimage: String,
     val productname: String,
     val rating: String,
-    val review: String
+    val review: String,
+    val sizes: String
 ): Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.createStringArrayList() ?: listOf(),
@@ -24,6 +25,7 @@ data class Product(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readInt(),
+        parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
@@ -42,6 +44,7 @@ data class Product(
         parcel.writeString(productname)
         parcel.writeString(rating)
         parcel.writeString(review)
+        parcel.writeString(sizes)
     }
 
     override fun describeContents(): Int = 0

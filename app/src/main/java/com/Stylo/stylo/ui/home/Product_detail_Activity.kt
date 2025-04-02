@@ -2,9 +2,12 @@ package com.Stylo.stylo.ui.home
 
 import android.os.Build
 import android.os.Bundle
+import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import com.Stylo.stylo.R
 import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.adapter.ProductImageAdapter
 import com.Stylo.stylo.databinding.ActivityProductDetailBinding
@@ -22,7 +25,10 @@ class Product_detail_Activity : AppCompatActivity() {
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //val product = this.intent.getParcelableExtra("PRODUCT", Product::class.java)
+        // Set up the custom action bar
+        setupActionBar()
+
+        // Get product from intent
         val product: Product? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("PRODUCT", Product::class.java)
         } else {
@@ -58,12 +64,42 @@ class Product_detail_Activity : AppCompatActivity() {
         }
     }
 
+    private fun setupActionBar() {
+        // Find views in the included action bar layout
+        val backButton = binding.myToolbar.btnBack
+        val titleTextView = binding.myToolbar.tvTitle
+        val notificationButton = binding.myToolbar.btnNotification
+        // Set the title
+        titleTextView.text = "Details"
+
+        // Set click listener for back button
+        backButton.setOnClickListener {
+            // Handle back navigation
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                onBackPressed()
+            } else {
+                @Suppress("DEPRECATION")
+                onBackPressed() // For older versions of Android
+            }
+        }
+
+        // Set click listener for notification button
+        notificationButton.setOnClickListener {
+            // Handle notification click
+            Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show()
+
+            // You can replace this with navigation to your notifications screen
+            // val intent = Intent(this, NotificationsActivity::class.java)
+            // startActivity(intent)
+        }
+    }
+
     private fun setupSizeOptions(product: Product) {
         // Clear any existing chips
         binding.chipGroupTechnologies.removeAllViews()
 
         // Example sizes - replace with actual sizes from your product
-        val sizes = listOf("S", "M", "L", "XL")
+        val sizes = product.sizes?.split(",") ?: listOf("S", "M", "L", "XL")
 
         // Create a chip for each size
         for (size in sizes) {

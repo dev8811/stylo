@@ -87,33 +87,13 @@
                 android:textStyle="bold" />
 
             <!-- Size Options -->
-            <RadioGroup
-                android:id="@+id/sizeOptions"
-                android:layout_width="wrap_content"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupTechnologies"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <RadioButton
-                    android:id="@+id/sizeS"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="S" />
-
-                <RadioButton
-                    android:id="@+id/sizeM"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="M" />
-
-                <RadioButton
-                    android:id="@+id/sizeL"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="L" />
-            </RadioGroup>
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="4dp"
+                app:singleSelection="true" />
         </LinearLayout>
     </ScrollView>
 

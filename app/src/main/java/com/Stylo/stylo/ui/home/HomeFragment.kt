@@ -1,6 +1,6 @@
 package com.Stylo.stylo.ui.home
 
-import ProductAdapter
+
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
@@ -16,6 +16,7 @@ import com.Stylo.stylo.RetrofitApi.ApiClient
 import com.Stylo.stylo.RetrofitApi.FatchProduct
 import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.adapter.CategoryAdapter
+import com.Stylo.stylo.adapter.ProductAdapter
 import com.Stylo.stylo.databinding.FragmentHomeBinding
 import retrofit2.Call
 import retrofit2.Callback

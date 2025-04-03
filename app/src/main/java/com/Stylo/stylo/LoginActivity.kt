@@ -58,7 +58,16 @@ class LoginActivity : AppCompatActivity() {
                     val loginResponse = response.body()
                     if (loginResponse != null && loginResponse.status) {
                         Toast.makeText(this@LoginActivity, loginResponse.message, Toast.LENGTH_SHORT).show()
-                        saveUserLoginState(email)
+
+                        // Extract user details from response
+                        val userId = loginResponse.user?.userId ?: ""
+                        val email = loginResponse.user?.email ?: ""
+                        val firstName = loginResponse.user?.firstName ?: ""
+                        val lastName = loginResponse.user?.lastName ?: ""
+
+                        // Save user data in SharedPreferences
+                        saveUserLoginState(userId, email, firstName, lastName)
+
                         navigateToHome()
                     } else {
                         showError(response)
@@ -86,11 +95,14 @@ class LoginActivity : AppCompatActivity() {
         Log.e("LoginError", "Error response: $errorMessage")
     }
 
-    private fun saveUserLoginState(email: String) {
+    private fun saveUserLoginState(userId: String, email: String, firstName: String, lastName: String) {
         val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
         with(sharedPreferences.edit()) {
             putBoolean("isLoggedIn", true)
+            putString("userId", userId)
             putString("userEmail", email)
+            putString("firstName", firstName)
+            putString("lastName", lastName)
             apply()
         }
     }

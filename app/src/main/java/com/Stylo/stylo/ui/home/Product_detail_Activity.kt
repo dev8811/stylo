@@ -1,6 +1,7 @@
 package com.Stylo.stylo.ui.home
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -12,9 +13,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import com.Stylo.stylo.R
 import com.Stylo.stylo.RetrofitApi.ApiClient
+import com.Stylo.stylo.RetrofitApi.CartItemResponse
 import com.Stylo.stylo.RetrofitApi.FatchProduct
 import com.Stylo.stylo.RetrofitApi.Product
-import com.Stylo.stylo.adapter.CategoryAdapter
 import com.Stylo.stylo.adapter.ProductAdapter
 import com.Stylo.stylo.adapter.ProductImageAdapter
 import com.Stylo.stylo.databinding.ActivityProductDetailBinding
@@ -31,6 +32,7 @@ class Product_detail_Activity : AppCompatActivity() {
     private var selectedColor: String? = null
     private var quantity = 1
     private var CategoryID = 0
+    private var userId: Int? = null
     private var basePrice: Double = 0.0
     private val productList = mutableListOf<Product>()
     private var adapter: ProductAdapter? = null
@@ -40,6 +42,17 @@ class Product_detail_Activity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        // Retrieve user data from SharedPreferences
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        val userIdString = sharedPreferences.getString("userId", null)
+
+        // Convert userIdString to Int (handle safely)
+        userId = userIdString?.toInt()
+
+        if (userId == null) {
+            Toast.makeText(this, "Invalid user ID", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         // Set up the custom action bar
         setupActionBar()
@@ -48,8 +61,7 @@ class Product_detail_Activity : AppCompatActivity() {
         val product: Product? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("PRODUCT", Product::class.java)
         } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableExtra("PRODUCT") as? Product
+            @Suppress("DEPRECATION") intent.getParcelableExtra("PRODUCT") as? Product
         }
 
         if (product == null) {
@@ -85,15 +97,12 @@ class Product_detail_Activity : AppCompatActivity() {
         // Handle Add to Cart button click
         binding.btnAddToCart.setOnClickListener {
             if (selectedSize != null) {
-                Toast.makeText(
-                    this,
-                    "Added ${product.name} (Size: $selectedSize, Qty: $quantity) to cart",
-                    Toast.LENGTH_SHORT
-                ).show()
+                addToCart(userId!!, product.product_id, quantity)
             } else {
                 Toast.makeText(this, "Please select a size", Toast.LENGTH_SHORT).show()
             }
         }
+
     }
 
     private fun setupActionBar() {
@@ -201,7 +210,7 @@ class Product_detail_Activity : AppCompatActivity() {
         binding.productGrid.adapter = adapter
 
         // Show loading state if needed
-        // binding.progressBar.visibility = View.VISIBLE
+        binding.progressBar.visibility = View.VISIBLE
 
         // Load related products based on category ID
         fetchProducts(CategoryID.toString())
@@ -217,10 +226,12 @@ class Product_detail_Activity : AppCompatActivity() {
                 if (response.isSuccessful) {
                     response.body()?.let { fetchedData ->
                         // Get the current product ID
-                        val currentProductId = intent.getParcelableExtra<Product>("PRODUCT")?.product_id ?: -1
+                        val currentProductId =
+                            intent.getParcelableExtra<Product>("PRODUCT")?.product_id ?: -1
 
                         // Filter out the current product from the similar products list
-                        val filteredProducts = fetchedData.products.filter { it.product_id != currentProductId }
+                        val filteredProducts =
+                            fetchedData.products.filter { it.product_id != currentProductId }
 
                         // Update the product list with filtered results
                         productList.clear()
@@ -251,6 +262,31 @@ class Product_detail_Activity : AppCompatActivity() {
             }
         })
     }
+
+    private fun addToCart(userId: Int, productId: Int, quantity: Int) {
+        ApiClient.apiService.addToCart("add_item", userId, productId, quantity)
+            .enqueue(object : Callback<CartItemResponse> {
+                override fun onResponse(
+                    call: Call<CartItemResponse>,
+                    response: Response<CartItemResponse>
+                ) {
+                    if (response.isSuccessful && response.body() != null) {
+                        showToast("added to cart successfully")
+                        //     showToast(response.body()?.message.toString())
+                    } else {
+                        val errorMessage = response.errorBody()?.string() ?: "Unknown error"
+                        showToast("Failed to add product to cart: $errorMessage")
+                        Log.e("AddToCart", "Error: $errorMessage")
+                    }
+                }
+
+                override fun onFailure(call: Call<CartItemResponse>, t: Throwable) {
+                    showToast("Network error: ${t.localizedMessage}")
+                    Log.e("AddToCart", "Network Error: ${t.localizedMessage}", t)
+                }
+            })
+    }
+
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()

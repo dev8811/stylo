@@ -4,47 +4,41 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class Product(
-    val all_images: List<String>,
-    val categoryid: String,
+    val product_id: Int,
+    val name: String,
     val description: String,
-    val discount: String,
-    val originalprice: String,
+    val price: String,
+    val stock_quantity: Int,
+    val category_id: Int,
     val primary_image: String,
-    val productid: Int,
-    val productimage: String,
-    val productname: String,
-    val rating: String,
-    val review: String,
-    val sizes: String
-): Parcelable {
+    val all_images: List<String>,
+    val is_active: Boolean,
+    val sizes: List<String> // ✅ Fixed: Now a List<String> instead of String
+) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.createStringArrayList() ?: listOf(),
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
-        parcel.readString() ?: "",
         parcel.readInt(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
+        parcel.readInt(),
+        parcel.readInt(),
         parcel.readString() ?: "",
-        parcel.readString() ?: ""
+        parcel.createStringArrayList() ?: listOf(),
+        parcel.readByte() != 0.toByte(),
+        parcel.createStringArrayList() ?: listOf() // ✅ Fixed: Properly reading List<String>
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
-        parcel.writeStringList(all_images)
-        parcel.writeString(categoryid)
+        parcel.writeInt(product_id)
+        parcel.writeString(name)
         parcel.writeString(description)
-        parcel.writeString(discount)
-        parcel.writeString(originalprice)
+        parcel.writeString(price)
+        parcel.writeInt(stock_quantity)
+        parcel.writeInt(category_id)
         parcel.writeString(primary_image)
-        parcel.writeInt(productid)
-        parcel.writeString(productimage)
-        parcel.writeString(productname)
-        parcel.writeString(rating)
-        parcel.writeString(review)
-        parcel.writeString(sizes)
+        parcel.writeStringList(all_images)
+        parcel.writeByte(if (is_active) 1 else 0)
+        parcel.writeStringList(sizes) // ✅ Fixed: Writing List<String> properly
     }
 
     override fun describeContents(): Int = 0

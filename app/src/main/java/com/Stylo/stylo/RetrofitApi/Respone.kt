@@ -1,14 +1,19 @@
 package com.Stylo.stylo.RetrofitApi
 
+import com.google.gson.annotations.SerializedName
+
 data class LocalResponse(
-    val message: String, val status: Boolean
+    @SerializedName("message") val message: String,
+    @SerializedName("status") val status: Boolean
 )
 
 data class LoginRequest(
-    val email: String, val password: String
+    @SerializedName("email") val email: String,
+    @SerializedName("password") val password: String
 )
 
 data class SignupRequest(
-    val name: String, val email: String, val password: String
+    @SerializedName("name") val name: String,
+    @SerializedName("email") val email: String,
+    @SerializedName("password") val password: String
 )
-

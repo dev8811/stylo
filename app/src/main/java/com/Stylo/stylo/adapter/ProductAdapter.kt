@@ -8,8 +8,7 @@ import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.databinding.ItemProductCardBinding
 import com.bumptech.glide.Glide
 
-class
-ProductAdapter(
+class ProductAdapter(
     private val products: List<Product>,
     private val onItemClick: (Product) -> Unit
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
@@ -17,21 +16,34 @@ ProductAdapter(
     // Track favorite states for products
     private val favoriteStates = mutableMapOf<Int, Boolean>()
 
-    inner class ProductViewHolder(val binding: ItemProductCardBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class ProductViewHolder(private val binding: ItemProductCardBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(product: Product, position: Int) {
-            binding.productName.text = product.productname
-            binding.productPrice.text = "₹${product.originalprice}"
+            binding.productName.text = product.name
+            binding.productPrice.text = "₹${product.price}"
 
-            // Get the first image from the list if available, otherwise fallback to productimage
-            val imageToLoad = if (product.all_images.isNotEmpty()) {
+            // Get the primary image or fallback to the first available image
+            val imageToLoad = if (product.primary_image.isNotEmpty()) {
+                product.primary_image
+            } else if (product.all_images.isNotEmpty()) {
                 product.all_images[0]
             } else {
-                product.productimage
+                R.drawable.placeholder_image // Fallback image if no images are available
             }
 
             Glide.with(binding.root.context)
                 .load(imageToLoad)
+                .placeholder(R.drawable.placeholder_image) // Placeholder while loading
+                .error(R.drawable.placeholder_image) // Error image if loading fails
                 .into(binding.productImage)
+
+            // Check stock availability
+            if (product.stock_quantity > 0 && product.is_active) { // ✅ Check is_active as Boolean
+                binding.productStockStatus.text = "In Stock"
+                binding.productStockStatus.setTextColor(binding.root.context.getColor(R.color.green))
+            } else {
+                binding.productStockStatus.text = "Out of Stock"
+                binding.productStockStatus.setTextColor(binding.root.context.getColor(R.color.red))
+            }
 
             // Set favorite icon based on current state
             val isFavorite = favoriteStates[position] ?: false

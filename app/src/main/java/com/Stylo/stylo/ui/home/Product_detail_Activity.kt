@@ -2,8 +2,6 @@ package com.Stylo.stylo.ui.home
 
 import android.os.Build
 import android.os.Bundle
-import android.widget.ImageView
-import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -32,7 +30,7 @@ class Product_detail_Activity : AppCompatActivity() {
         val product: Product? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("PRODUCT", Product::class.java)
         } else {
-            @Suppress("DEPRECATION") // Suppress warning for deprecated method
+            @Suppress("DEPRECATION")
             intent.getParcelableExtra("PRODUCT") as? Product
         }
 
@@ -46,9 +44,8 @@ class Product_detail_Activity : AppCompatActivity() {
         setupProductImagePager(product)
 
         // Set product data using ViewBinding
-        binding.productTitle.text = product.productname
-        binding.productPrice.text = "₹${product.originalprice}"
-        binding.productRating.text = "⭐ ${product.rating}/5"
+        binding.productTitle.text = product.name
+        binding.productPrice.text = "₹${product.price}"
         binding.productDescription.text = product.description
 
         // Set up size options with ChipGroup
@@ -57,7 +54,11 @@ class Product_detail_Activity : AppCompatActivity() {
         // Handle Add to Cart button click
         binding.btnAddToCart.setOnClickListener {
             if (selectedSize != null) {
-                Toast.makeText(this, "Added ${product.productname} (Size: $selectedSize) to cart", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this,
+                    "Added ${product.name} (Size: $selectedSize) to cart",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 Toast.makeText(this, "Please select a size", Toast.LENGTH_SHORT).show()
             }
@@ -69,52 +70,40 @@ class Product_detail_Activity : AppCompatActivity() {
         val backButton = binding.myToolbar.btnBack
         val titleTextView = binding.myToolbar.tvTitle
         val notificationButton = binding.myToolbar.btnNotification
+
         // Set the title
         titleTextView.text = "Details"
 
         // Set click listener for back button
         backButton.setOnClickListener {
-            // Handle back navigation
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                onBackPressed()
-            } else {
-                @Suppress("DEPRECATION")
-                onBackPressed() // For older versions of Android
-            }
+            onBackPressedDispatcher.onBackPressed()
         }
 
         // Set click listener for notification button
         notificationButton.setOnClickListener {
-            // Handle notification click
             Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show()
-
-            // You can replace this with navigation to your notifications screen
-            // val intent = Intent(this, NotificationsActivity::class.java)
-            // startActivity(intent)
         }
     }
 
     private fun setupSizeOptions(product: Product) {
-        // Clear any existing chips
         binding.chipGroupTechnologies.removeAllViews()
 
-        // Example sizes - replace with actual sizes from your product
-        val sizes = product.sizes?.split(",") ?: listOf("S", "M", "L", "XL")
+        // ✅ FIX: Use `product.sizes` directly if available
+        val sizes = product.sizes
 
-        // Create a chip for each size
+        if (sizes.isEmpty()) {
+            Toast.makeText(this, "No sizes available", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         for (size in sizes) {
             val chip = Chip(this).apply {
-                text = size.trim()
+                text = size.toString().trim()
                 isCheckable = true
                 isClickable = true
 
-                // Set click listener for each chip
                 setOnCheckedChangeListener { _, isChecked ->
-                    if (isChecked) {
-                        selectedSize = text.toString()
-                    } else if (selectedSize == text.toString()) {
-                        selectedSize = null
-                    }
+                    selectedSize = if (isChecked) text.toString() else null
                 }
             }
             binding.chipGroupTechnologies.addView(chip)
@@ -122,34 +111,22 @@ class Product_detail_Activity : AppCompatActivity() {
     }
 
     private fun setupProductImagePager(product: Product) {
-        // Create a list to hold all image URLs
         val imageUrls = mutableListOf<String>()
 
-        // Add all images from the all_images list
+        // ✅ FIX: Simplified logic, avoiding duplicates
         if (product.all_images.isNotEmpty()) {
             imageUrls.addAll(product.all_images)
-        } else {
-            // Fallback to primary_image and productimage if all_images is empty
-            if (product.primary_image.isNotEmpty()) {
-                imageUrls.add(product.primary_image)
-            }
-            if (product.productimage.isNotEmpty() && product.productimage != product.primary_image) {
-                imageUrls.add(product.productimage)
-            }
+        } else if (product.primary_image.isNotEmpty()) {
+            imageUrls.add(product.primary_image)
         }
 
-        // Ensure we have at least one image to display
-        if (imageUrls.isEmpty() && product.productimage.isNotEmpty()) {
-            imageUrls.add(product.productimage)
+        if (imageUrls.isEmpty()) {
+            imageUrls.add("android.resource://${packageName}/${R.drawable.placeholder_image}")
         }
 
-        // Set up the adapter
         val adapter = ProductImageAdapter(imageUrls)
         binding.productImagePager.adapter = adapter
 
-        // Connect the TabLayout (dots indicator) with ViewPager2
-        TabLayoutMediator(binding.imageIndicator, binding.productImagePager) { _, _ ->
-            // No configuration needed for simple dots
-        }.attach()
+        TabLayoutMediator(binding.imageIndicator, binding.productImagePager) { _, _ -> }.attach()
     }
 }

@@ -1,0 +1,5 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@android:color/white"/>
+    <corners android:radius="8dp"/> <!-- Fixed: 50% is invalid, using dp instead -->
+    <size android:width="32dp" android:height="32dp"/>
+</shape>

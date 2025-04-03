@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -9,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "com.Stylo.stylo"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -55,12 +56,27 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     // Dependency:-
-    implementation ("com.google.code.gson:gson:2.10.1")
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation (libs.gson)
+    implementation (libs.retrofit)
+    implementation (libs.converter.gson)
 
     // Coroutines
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation (libs.kotlinx.coroutines.android)
+    implementation (libs.kotlinx.coroutines.core)
+
+    // Signin
+    implementation (libs.firebase.auth)
+    implementation (libs.play.services.auth)
+    implementation (libs.firebase.core)
+
+    // OkHttp (for logging API requests & responses)
+    implementation (libs.glide)
+
+    implementation (libs.okhttp)
+    implementation (libs.logging.interceptor)
+    implementation(libs.firebase.bom)
+
+    implementation ("androidx.viewpager2:viewpager2:1.0.0")
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
 }

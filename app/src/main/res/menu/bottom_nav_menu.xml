@@ -8,25 +8,27 @@
         android:title="@string/title_home" />
 
     <item
-        android:id="@+id/navigation_Search"
+        android:id="@+id/navigation_search"
         android:icon="@drawable/search"
         app:iconTint="@color/black"
         android:title="@string/title_Search" />
 
     <item
-        android:id="@+id/navigation_Save"
+        android:id="@+id/navigation_save"
         android:icon="@drawable/heart"
         app:iconTint="@color/black"
-        android:title="Save" />
+        android:title="@string/title_save" />
+
     <item
-        android:id="@+id/navigation_Cart"
+        android:id="@+id/navigation_cart"
         android:icon="@drawable/cart"
         app:iconTint="@color/black"
-        android:title="Cart" />
+        android:title="@string/title_cart" />
+
     <item
-        android:id="@+id/navigation_Account"
+        android:id="@+id/navigation_account"
         android:icon="@drawable/user"
         app:iconTint="@color/black"
-        android:title="Account" />
+        android:title="@string/title_account" />
 
 </menu>

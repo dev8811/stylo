@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@id/navigation_home">
 
     <fragment
         android:id="@+id/navigation_home"
@@ -12,24 +12,27 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_Search"
+        android:id="@+id/navigation_search"
         android:name="com.Stylo.stylo.ui.search.SearchFragment"
         android:label="@string/title_Search"
         tools:layout="@layout/fragment_search" />
 
     <fragment
-        android:id="@+id/navigation_Save"
+        android:id="@+id/navigation_save"
         android:name="com.Stylo.stylo.ui.save.SaveFragment"
-        android:label="@string/title_notifications"
+        android:label="@string/title_save"
         tools:layout="@layout/fragment_save" />
+
     <fragment
-        android:id="@+id/navigation_Cart"
-        android:name="com.Stylo.stylo.ui.save.SaveFragment"
-        android:label="@string/title_notifications"
+        android:id="@+id/navigation_cart"
+        android:name="com.Stylo.stylo.ui.cart.CartFragment"
+        android:label="@string/title_cart"
         tools:layout="@layout/fragment_cart" />
+
     <fragment
-        android:id="@+id/navigation_Account"
-        android:name="com.Stylo.stylo.ui.save.SaveFragment"
-        android:label="@string/title_notifications"
+        android:id="@+id/navigation_account"
+        android:name="com.Stylo.stylo.ui.account.AccountFragment"
+        android:label="@string/title_account"
         tools:layout="@layout/fragment_account" />
+
 </navigation>

@@ -1,8 +1,10 @@
 package com.Stylo.stylo
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.util.Patterns
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.Stylo.stylo.RetrofitApi.ApiClient
@@ -23,55 +25,90 @@ class LoginActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.tvSignup.setOnClickListener {
-            val intent = Intent(this, SignupActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, SignupActivity::class.java))
         }
+
         binding.btnLogin.setOnClickListener {
             val email = binding.etEmail.text.toString().trim()
             val password = binding.etPassword.text.toString().trim()
 
-            if (email.isNotEmpty() && password.isNotEmpty()) {
-                loginUser(email, password)
-            } else {
-                Toast.makeText(this, "Enter email and password", Toast.LENGTH_SHORT).show()
+            if (!isValidEmail(email)) {
+                Toast.makeText(this, "Enter a valid email", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
+
+            if (password.length < 6) {
+                Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            loginUser(email, password)
         }
     }
 
     private fun loginUser(email: String, password: String) {
         val request = LoginRequest(email, password)
-
-        // Show loading indicator and disable button
-       // binding.progressBar.visibility = View.VISIBLE
-        binding.btnLogin.isEnabled = false
+        binding.btnLogin.isEnabled = false // Disable button to prevent multiple clicks
 
         ApiClient.apiService.loginUser(request).enqueue(object : Callback<LocalResponse> {
             override fun onResponse(call: Call<LocalResponse>, response: Response<LocalResponse>) {
-                // Hide loading indicator and enable button
-             //   binding.progressBar.visibility = View.GONE
                 binding.btnLogin.isEnabled = true
 
                 if (response.isSuccessful) {
                     val loginResponse = response.body()
-                    if (loginResponse != null) {
+                    if (loginResponse != null && loginResponse.status) {
                         Toast.makeText(this@LoginActivity, loginResponse.message, Toast.LENGTH_SHORT).show()
-                        val intent = Intent(this@LoginActivity, Bottom_Navigatio_Activity::class.java)
-                        startActivity(intent)
+
+                        // Extract user details from response
+                        val userId = loginResponse.user?.userId ?: ""
+                        val email = loginResponse.user?.email ?: ""
+                        val firstName = loginResponse.user?.firstName ?: ""
+                        val lastName = loginResponse.user?.lastName ?: ""
+
+                        // Save user data in SharedPreferences
+                        saveUserLoginState(userId, email, firstName, lastName)
+
+                        navigateToHome()
+                    } else {
+                        showError(response)
                     }
                 } else {
-                    val errorMessage = response.errorBody()?.string() ?: "Login failed"
-                    Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
+                    showError(response)
                 }
             }
 
-            override fun onFailure(call: Call<LocalResponse >, t: Throwable) {
-                // Hide loading indicator and enable button
-              //  binding.progressBar.visibility = View.GONE
+            override fun onFailure(call: Call<LocalResponse>, t: Throwable) {
                 binding.btnLogin.isEnabled = true
-
-                Toast.makeText(this@LoginActivity, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
-                Log.e("Login error", "${t.message}")
+                Log.e("LoginError", "API call failed: ${t.message}", t)
+                Toast.makeText(this@LoginActivity, "Network error: ${t.message}", Toast.LENGTH_SHORT).show()
             }
         })
+    }
+
+    private fun isValidEmail(email: String): Boolean {
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+    }
+
+    private fun showError(response: Response<LocalResponse>) {
+        val errorMessage = response.errorBody()?.string() ?: "Login failed. Please try again."
+        Toast.makeText(this@LoginActivity, errorMessage, Toast.LENGTH_SHORT).show()
+        Log.e("LoginError", "Error response: $errorMessage")
+    }
+
+    private fun saveUserLoginState(userId: String, email: String, firstName: String, lastName: String) {
+        val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
+        with(sharedPreferences.edit()) {
+            putBoolean("isLoggedIn", true)
+            putString("userId", userId)
+            putString("userEmail", email)
+            putString("firstName", firstName)
+            putString("lastName", lastName)
+            apply()
+        }
+    }
+
+    private fun navigateToHome() {
+        startActivity(Intent(this, Bottom_Navigatio_Activity::class.java))
+        finish()
     }
 }

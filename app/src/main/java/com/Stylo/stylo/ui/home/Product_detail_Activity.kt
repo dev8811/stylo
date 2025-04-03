@@ -1,21 +1,39 @@
 package com.Stylo.stylo.ui.home
 
+import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
 import com.Stylo.stylo.R
+import com.Stylo.stylo.RetrofitApi.ApiClient
+import com.Stylo.stylo.RetrofitApi.FatchProduct
 import com.Stylo.stylo.RetrofitApi.Product
+import com.Stylo.stylo.adapter.CategoryAdapter
+import com.Stylo.stylo.adapter.ProductAdapter
 import com.Stylo.stylo.adapter.ProductImageAdapter
 import com.Stylo.stylo.databinding.ActivityProductDetailBinding
 import com.google.android.material.chip.Chip
 import com.google.android.material.tabs.TabLayoutMediator
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 class Product_detail_Activity : AppCompatActivity() {
 
     private lateinit var binding: ActivityProductDetailBinding
     private var selectedSize: String? = null
+    private var selectedColor: String? = null
+    private var quantity = 1
+    private var CategoryID = 0
+    private var basePrice: Double = 0.0
+    private val productList = mutableListOf<Product>()
+    private var adapter: ProductAdapter? = null
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,24 +57,37 @@ class Product_detail_Activity : AppCompatActivity() {
             finish()
             return
         }
+        CategoryID = product.category_id
+
+
+        // Set base price
+        basePrice = product.price.toDouble()
 
         // Set up product images with ViewPager2
         setupProductImagePager(product)
 
-        // Set product data using ViewBinding
+        // Set product data
         binding.productTitle.text = product.name
-        binding.productPrice.text = "₹${product.price}"
+        binding.productPrice.text = "₹${basePrice * quantity}"
         binding.productDescription.text = product.description
 
-        // Set up size options with ChipGroup
+        // Setup product recycler view for similar products
+        setupProductRecyclerView()
+        // Setup stock indicator
+        setupStockIndicator(product)
+
+        // Set up size options
         setupSizeOptions(product)
+
+        // Set up quantity selector
+        setupQuantitySelector()
 
         // Handle Add to Cart button click
         binding.btnAddToCart.setOnClickListener {
             if (selectedSize != null) {
                 Toast.makeText(
                     this,
-                    "Added ${product.name} (Size: $selectedSize) to cart",
+                    "Added ${product.name} (Size: $selectedSize, Qty: $quantity) to cart",
                     Toast.LENGTH_SHORT
                 ).show()
             } else {
@@ -66,20 +97,16 @@ class Product_detail_Activity : AppCompatActivity() {
     }
 
     private fun setupActionBar() {
-        // Find views in the included action bar layout
         val backButton = binding.myToolbar.btnBack
         val titleTextView = binding.myToolbar.tvTitle
         val notificationButton = binding.myToolbar.btnNotification
 
-        // Set the title
         titleTextView.text = "Details"
 
-        // Set click listener for back button
         backButton.setOnClickListener {
             onBackPressedDispatcher.onBackPressed()
         }
 
-        // Set click listener for notification button
         notificationButton.setOnClickListener {
             Toast.makeText(this, "Notifications", Toast.LENGTH_SHORT).show()
         }
@@ -88,7 +115,6 @@ class Product_detail_Activity : AppCompatActivity() {
     private fun setupSizeOptions(product: Product) {
         binding.chipGroupTechnologies.removeAllViews()
 
-        // ✅ FIX: Use `product.sizes` directly if available
         val sizes = product.sizes
 
         if (sizes.isEmpty()) {
@@ -110,10 +136,41 @@ class Product_detail_Activity : AppCompatActivity() {
         }
     }
 
+    private fun setupStockIndicator(product: Product) {
+        if (product.is_active) {
+            binding.stockIndicator.visibility = View.GONE
+        } else {
+            binding.stockIndicator.text = "Out of Stock"
+            binding.btnAddToCart.visibility = View.GONE
+            binding.quantityText.visibility = View.GONE
+            binding.btnIncrease.visibility = View.GONE
+            binding.btnDecrease.visibility = View.GONE
+            binding.stockIndicator.setTextColor(resources.getColor(R.color.red, null))
+        }
+    }
+
+    private fun setupQuantitySelector() {
+        binding.quantityText.text = quantity.toString()
+        binding.productPrice.text = "₹${basePrice * quantity}"
+
+        binding.btnIncrease.setOnClickListener {
+            quantity++
+            binding.quantityText.text = quantity.toString()
+            binding.productPrice.text = "₹${basePrice * quantity}"
+        }
+
+        binding.btnDecrease.setOnClickListener {
+            if (quantity > 1) {
+                quantity--
+                binding.quantityText.text = quantity.toString()
+                binding.productPrice.text = "₹${basePrice * quantity}"
+            }
+        }
+    }
+
     private fun setupProductImagePager(product: Product) {
         val imageUrls = mutableListOf<String>()
 
-        // ✅ FIX: Simplified logic, avoiding duplicates
         if (product.all_images.isNotEmpty()) {
             imageUrls.addAll(product.all_images)
         } else if (product.primary_image.isNotEmpty()) {
@@ -128,5 +185,74 @@ class Product_detail_Activity : AppCompatActivity() {
         binding.productImagePager.adapter = adapter
 
         TabLayoutMediator(binding.imageIndicator, binding.productImagePager) { _, _ -> }.attach()
+    }
+
+    private fun setupProductRecyclerView() {
+        // Make sure the recyclerView exists in your layout
+        binding.productGrid.layoutManager = GridLayoutManager(this, 2)
+        binding.productGrid.setHasFixedSize(true)
+
+        adapter = ProductAdapter(productList) { product ->
+            val intent = Intent(this, Product_detail_Activity::class.java).apply {
+                putExtra("PRODUCT", product)
+            }
+            startActivity(intent)
+        }
+        binding.productGrid.adapter = adapter
+
+        // Show loading state if needed
+        // binding.progressBar.visibility = View.VISIBLE
+
+        // Load related products based on category ID
+        fetchProducts(CategoryID.toString())
+    }
+
+    private fun fetchProducts(categoryId: String) {
+        ApiClient.apiService.getProducts(categoryId).enqueue(object : Callback<FatchProduct> {
+            @SuppressLint("NotifyDataSetChanged")
+            override fun onResponse(call: Call<FatchProduct>, response: Response<FatchProduct>) {
+                // Hide loading state if needed
+                binding.progressBar.visibility = View.GONE
+
+                if (response.isSuccessful) {
+                    response.body()?.let { fetchedData ->
+                        // Get the current product ID
+                        val currentProductId = intent.getParcelableExtra<Product>("PRODUCT")?.product_id ?: -1
+
+                        // Filter out the current product from the similar products list
+                        val filteredProducts = fetchedData.products.filter { it.product_id != currentProductId }
+
+                        // Update the product list with filtered results
+                        productList.clear()
+                        productList.addAll(filteredProducts)
+                        adapter?.notifyDataSetChanged()
+
+                        // Show/hide empty state
+                        if (productList.isEmpty()) {
+                            binding.emptyStateView.visibility = View.VISIBLE
+                            binding.productGrid.visibility = View.GONE
+                        } else {
+                            binding.emptyStateView.visibility = View.GONE
+                            binding.productGrid.visibility = View.VISIBLE
+                        }
+                    } ?: showToast("No products found")
+                } else {
+                    showToast("Failed to load products: ${response.message()}")
+                    Log.e("ProductDetail", "Error: ${response.code()} - ${response.message()}")
+                }
+            }
+
+            override fun onFailure(call: Call<FatchProduct>, t: Throwable) {
+                // Hide loading state
+                binding.progressBar.visibility = View.GONE
+
+                showToast("Error fetching products: ${t.localizedMessage}")
+                Log.e("ProductDetail", "Error fetching products", t)
+            }
+        })
+    }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

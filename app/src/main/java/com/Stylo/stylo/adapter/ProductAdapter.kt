@@ -1,6 +1,7 @@
 package com.Stylo.stylo.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.Stylo.stylo.R
@@ -38,11 +39,12 @@ class ProductAdapter(
 
             // Check stock availability
             if (product.stock_quantity > 0 && product.is_active) { // ✅ Check is_active as Boolean
-                binding.productStockStatus.text = "In Stock"
-                binding.productStockStatus.setTextColor(binding.root.context.getColor(R.color.green))
+
             } else {
                 binding.productStockStatus.text = "Out of Stock"
                 binding.productStockStatus.setTextColor(binding.root.context.getColor(R.color.red))
+                binding.productPrice.visibility = View.GONE
+                binding.productDisscount.visibility = View.GONE
             }
 
             // Set favorite icon based on current state

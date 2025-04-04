@@ -85,36 +85,44 @@ class CartFragment : Fragment() {
                     @SuppressLint("NotifyDataSetChanged")
                     override fun onResponse(call: Call<CartDetailsResponse>, response: Response<CartDetailsResponse>) {
                         if (response.isSuccessful && response.body()?.status == true) {
-                            response.body()?.cartItems?.let {
+                            val items = response.body()?.cartItems
 
-                                cartItems.clear()
-                                cartItems.addAll(it)
-                                cartAdapter.notifyDataSetChanged()
-
-                                // Show/hide empty cart view
-                                if (cartItems.isEmpty()) {
-                                    binding.emptyCartView.visibility = View.VISIBLE
-                                    binding.recyclerViewCart.visibility = View.GONE
-                                    binding.checkoutLayout.visibility = View.GONE
-
-                                } else {
-                                    binding.emptyCartView.visibility = View.GONE
-                                    binding.recyclerViewCart.visibility = View.VISIBLE
-                                    binding.checkoutLayout.visibility = View.VISIBLE
-
-                                }
-
-                                // Calculate and update cart total
-                                val total = cartItems.sumOf { item -> item.price * item.quantity }
-                                binding.tvTotal.text = "₹$total"
+                            cartItems.clear()
+                            if (items != null) {
+                                cartItems.addAll(items)
                             }
+                            cartAdapter.notifyDataSetChanged()
+
+                            updateCartVisibility()
+
+                            // Calculate and update cart total
+                            val total = cartItems.sumOf { item -> item.price * item.quantity }
+                            binding.tvTotal.text = "₹$total"
                         } else {
                             Toast.makeText(requireContext(), "Failed to fetch cart", Toast.LENGTH_SHORT).show()
+                            cartItems.clear()
+                            cartAdapter.notifyDataSetChanged()
+                            updateCartVisibility()
                         }
                     }
 
                     override fun onFailure(call: Call<CartDetailsResponse>, t: Throwable) {
                         Toast.makeText(requireContext(), "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                        cartItems.clear()
+                        cartAdapter.notifyDataSetChanged()
+                        updateCartVisibility()
+                    }
+
+                    private fun updateCartVisibility() {
+                        if (cartItems.isEmpty()) {
+                            binding.emptyCartView.visibility = View.VISIBLE
+                            binding.recyclerViewCart.visibility = View.GONE
+                            binding.checkoutLayout.visibility = View.GONE
+                        } else {
+                            binding.emptyCartView.visibility = View.GONE
+                            binding.recyclerViewCart.visibility = View.VISIBLE
+                            binding.checkoutLayout.visibility = View.VISIBLE
+                        }
                     }
                 })
         }

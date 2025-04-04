@@ -61,4 +61,10 @@ interface ApiInterface {
         @Field("action") action: String = "clear_cart",
         @Field("user_id") userId: Int
     ): Call<CartResponse>
+
+    @POST("wishlist_toggle.php")
+    fun toggleWishlist(
+        @Body body: Map<String, Int>
+    ): Call<BaseResponse>
+
 }

@@ -2,6 +2,8 @@ package com.Stylo.stylo.RetrofitApi
 
 import androidx.annotation.Nullable
 import com.Stylo.stylo.data.SearchResponse
+import com.Stylo.stylo.data.WishlistResponse
+import okhttp3.RequestBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Field
@@ -65,10 +67,10 @@ interface ApiInterface {
         @Field("user_id") userId: Int
     ): Call<CartResponse>
 
-    @POST("wishlist_toggle.php")
-    fun toggleWishlist(
-        @Body body: Map<String, Int>
-    ): Call<BaseResponse>
+//    @POST("wishlist.php")
+//    fun toggleWishlist(
+//        @Body body: Map<String, Int>
+//    ): Call<BaseResponse>
 
     @GET("fatchCategorie.php")
     fun getCategories(): Call<CategoryResponse>
@@ -80,5 +82,14 @@ interface ApiInterface {
         @Query("limit") limit: Int = 50,
         @Query("offset") offset: Int = 0
     ): Call<SearchResponse>
+
+
+    @FormUrlEncoded
+    @POST("Whishlist.php")
+    fun wishlist(
+        @Field("user_id") userId: Int,
+        @Field("product_id") productId: Int
+    ): Call<WishlistResponse>
+
 
 }

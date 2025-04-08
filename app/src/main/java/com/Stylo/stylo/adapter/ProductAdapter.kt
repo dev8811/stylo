@@ -54,11 +54,11 @@ class ProductAdapter(
             // Set click listeners
             binding.root.setOnClickListener { onItemClick(product) }
 
-            binding.favoriteIcon.setOnClickListener {
-                val newFavoriteState = !(favoriteStates[position] ?: false)
-                favoriteStates[position] = newFavoriteState
-                binding.favoriteIcon.setImageResource(if (newFavoriteState) R.drawable.heart_fill else R.drawable.heart)
-            }
+//            binding.favoriteIcon.setOnClickListener {
+//                val newFavoriteState = !(favoriteStates[position] ?: false)
+//                favoriteStates[position] = newFavoriteState
+//                binding.favoriteIcon.setImageResource(if (newFavoriteState) R.drawable.heart_fill else R.drawable.heart)
+//            }
         }
     }
 

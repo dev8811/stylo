@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -17,6 +18,7 @@ import com.Stylo.stylo.RetrofitApi.FatchProduct
 import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.adapter.ProductAdapter
 import com.Stylo.stylo.adapter.ProductImageAdapter
+import com.Stylo.stylo.data.WishlistResponse
 import com.Stylo.stylo.databinding.ActivityProductDetailBinding
 import com.google.android.material.chip.Chip
 import com.google.android.material.tabs.TabLayoutMediator
@@ -40,6 +42,9 @@ class Product_detail_Activity : AppCompatActivity() {
     private var currentProductsCall: Call<FatchProduct>? = null
     private var currentCartCall: Call<CartItemResponse>? = null
     private var activityReference: WeakReference<Product_detail_Activity>? = null
+
+    private var currentWishlistCall: Call<WishlistResponse>? = null
+    private var isInWishlist = false
 
     @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -89,6 +94,10 @@ class Product_detail_Activity : AppCompatActivity() {
         binding.productTitle.text = product.name
         binding.productPrice.text = "₹${basePrice * quantity}"
         binding.productDescription.text = product.description
+
+
+        // Setup wishlist
+        setupWishlist(product.product_id)
 
         // Setup product recycler view for similar products
         setupProductRecyclerView()
@@ -340,4 +349,108 @@ class Product_detail_Activity : AppCompatActivity() {
         adapter = null
         activityReference?.clear()
     }
+
+
+
+
+    private fun setupWishlist(productId: Int) {
+        // Set initial state (empty heart)
+        binding.favoriteIcon.setImageResource(R.drawable.heart)
+        isInWishlist = false
+
+        // Check actual status from server
+        if (userId != null) {
+            checkWishlistStatus(userId!!, productId)
+        }
+
+        binding.favoriteIcon.setOnClickListener {
+            if (userId != null) {
+                toggleWishlist(userId!!, productId)
+            } else {
+                Toast.makeText(this, "Please login to use wishlist", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+
+    private fun toggleWishlist(userId: Int, productId: Int) {
+        // Immediately toggle the visual state for better UX
+        isInWishlist = !isInWishlist
+        updateWishlistIcon()
+
+//        currentWishlistCall?.cancel()
+        currentWishlistCall = ApiClient.apiService.wishlist(userId, productId)
+        currentWishlistCall?.enqueue(object : Callback<WishlistResponse> {
+            override fun onResponse(call: Call<WishlistResponse>, response: Response<WishlistResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { res ->
+                        // Only update state if API confirms the change
+                        isInWishlist = res.status == "true"
+                        runOnUiThread {
+                            updateWishlistIcon()
+                            showToast(res.message ?: if (isInWishlist) "Added to wishlist" else "Removed from wishlist")
+                        }
+                    }
+                } else {
+                    // Revert if API call failed
+                    isInWishlist = !isInWishlist
+                    runOnUiThread {
+                        updateWishlistIcon()
+                        showToast("Failed to update wishlist")
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<WishlistResponse>, t: Throwable) {
+                // Revert if network error
+                isInWishlist = !isInWishlist
+                runOnUiThread {
+                    updateWishlistIcon()
+                    showToast("Network error: ${t.message}")
+                }
+            }
+        })
+    }
+
+    private fun checkWishlistStatus(userId: Int, productId: Int) {
+        currentWishlistCall?.cancel()
+
+        currentWishlistCall = ApiClient.apiService.wishlist(userId, productId)
+        currentWishlistCall?.enqueue(object : Callback<WishlistResponse> {
+            override fun onResponse(call: Call<WishlistResponse>, response: Response<WishlistResponse>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { res ->
+                        isInWishlist = res.status == "true"
+                        runOnUiThread {
+                            updateWishlistIcon()
+                        }
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<WishlistResponse>, t: Throwable) {
+                // Silent fail for initial check
+            }
+        })
+    }
+
+    private fun updateWishlistIcon() {
+        val iconRes = if (isInWishlist) R.drawable.heart_fill else R.drawable.heart
+        binding.favoriteIcon.setImageResource(iconRes)
+
+        // Optional: Add animation
+        binding.favoriteIcon.animate()
+            .scaleX(1.2f)
+            .scaleY(1.2f)
+            .setDuration(200)
+            .withEndAction {
+                binding.favoriteIcon.animate()
+                    .scaleX(1f)
+                    .scaleY(1f)
+                    .setDuration(200)
+                    .start()
+            }
+            .start()
+    }
+
 }

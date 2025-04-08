@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +13,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.Stylo.stylo.RetrofitApi.ApiClient
+import com.Stylo.stylo.RetrofitApi.Category
+import com.Stylo.stylo.RetrofitApi.CategoryResponse
 import com.Stylo.stylo.RetrofitApi.FatchProduct
 import com.Stylo.stylo.RetrofitApi.Product
 import com.Stylo.stylo.adapter.CategoryAdapter
@@ -36,31 +37,30 @@ class HomeFragment : Fragment() {
     private val productList = mutableListOf<Product>()
     private val filteredList = mutableListOf<Product>()
 
-    private val categories = listOf("All", "Tshirts", "Jeans", "Shoes", "Jackets")
-    private val categoryIds = listOf("0", "1", "2", "3", "4")
-    private var selectedCategoryId = "0"
-
     private var currentApiCall: Call<FatchProduct>? = null
     private var lastRequestedCategoryId: String = "0"
 
+    private var categoryList = ArrayList<Category>()
+    private var categoryAdapter: CategoryAdapter? = null
+
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
 
-        setupCategoryRecyclerView()
         setupProductRecyclerView()
         setupSearchView()
+        fetchCategories()
 
         return binding.root
     }
 
     private fun setupCategoryRecyclerView() {
-        val categoryAdapter = CategoryAdapter(categories) { position ->
-            selectedCategoryId = categoryIds[position]
-            fetchProducts(selectedCategoryId)
+        if (_binding == null) return
+
+        categoryAdapter = CategoryAdapter(categoryList) { category ->
+            lastRequestedCategoryId = category.category_id.toString()
+            fetchProducts(category.category_id.toString())
         }
 
         binding.categoryTabs.layoutManager =
@@ -69,6 +69,8 @@ class HomeFragment : Fragment() {
     }
 
     private fun setupProductRecyclerView() {
+        if (_binding == null) return
+
         binding.productGrid.layoutManager = GridLayoutManager(requireContext(), 2)
         binding.productGrid.setHasFixedSize(true)
 
@@ -80,26 +82,19 @@ class HomeFragment : Fragment() {
         }
 
         binding.productGrid.adapter = adapter
-
-        fetchProducts(selectedCategoryId)
     }
 
     private fun setupSearchView() {
+        if (_binding == null) return
+
         binding.searchEditText.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                // not needed
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-                // not needed
-            }
-
+            override fun afterTextChanged(s: Editable?) {}
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 filterProducts(s.toString().trim())
             }
         })
     }
-
 
     private fun filterProducts(query: String) {
         filteredList.clear()
@@ -108,11 +103,49 @@ class HomeFragment : Fragment() {
         } else {
             val lowerCaseQuery = query.lowercase()
             filteredList.addAll(productList.filter {
-                it.name.lowercase().contains(lowerCaseQuery) ||
-                        it.description.lowercase().contains(lowerCaseQuery)
+                it.name.lowercase().contains(lowerCaseQuery) || it.description.lowercase()
+                    .contains(lowerCaseQuery)
             })
         }
         adapter?.notifyDataSetChanged()
+    }
+
+    private fun fetchCategories() {
+        ApiClient.apiService.getCategories().enqueue(object : Callback<CategoryResponse> {
+            override fun onResponse(
+                call: Call<CategoryResponse>,
+                response: Response<CategoryResponse>
+            ) {
+                val currentBinding = _binding
+                if (currentBinding == null) return  // Return early if binding is null
+
+                val fetchedData = response.body()
+
+                if (response.isSuccessful && fetchedData?.status == true) {
+                    categoryList.clear()
+                    fetchedData.data.let { categoryList.addAll(it) }
+
+
+                    categoryList.forEach {
+
+                    }
+
+                    setupCategoryRecyclerView()
+                    if (categoryList.isNotEmpty()) {
+                        fetchProducts(categoryList[0].category_id.toString())
+                    }
+                } else {
+                    showToast(fetchedData?.message ?: "Failed to load categories")
+
+                }
+            }
+
+            override fun onFailure(call: Call<CategoryResponse>, t: Throwable) {
+                if (_binding == null) return  // Return early if binding is null
+
+                showToast("Error: ${t.localizedMessage}")
+            }
+        })
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -120,27 +153,30 @@ class HomeFragment : Fragment() {
         currentApiCall?.cancel()
         lastRequestedCategoryId = categoryId
 
+        val currentBinding = _binding
+        if (currentBinding == null) return  // Check binding early and return if null
+
         productList.clear()
         filteredList.clear()
         adapter?.notifyDataSetChanged()
 
-        binding.loadingProgressBar.visibility = View.VISIBLE
-        binding.productGrid.visibility = View.GONE
+        currentBinding.loadingProgressBar.visibility = View.VISIBLE
+        currentBinding.productGrid.visibility = View.GONE
 
         currentApiCall = ApiClient.apiService.getProducts(categoryId)
 
         currentApiCall?.enqueue(object : Callback<FatchProduct> {
             @SuppressLint("NotifyDataSetChanged")
             override fun onResponse(call: Call<FatchProduct>, response: Response<FatchProduct>) {
-                if (call.isCanceled || categoryId != lastRequestedCategoryId) {
-                    Log.d("HomeFragment", "Ignoring response for $categoryId (current: $lastRequestedCategoryId)")
-                    return
-                }
+                if (call.isCanceled || categoryId != lastRequestedCategoryId) return
 
                 CoroutineScope(Dispatchers.IO).launch {
                     val fetchedData = response.body()
 
                     withContext(Dispatchers.Main) {
+                        val binding = _binding
+                        if (binding == null) return@withContext  // Check binding again before accessing UI
+
                         binding.loadingProgressBar.visibility = View.GONE
 
                         if (response.isSuccessful && fetchedData != null && fetchedData.status) {
@@ -165,29 +201,27 @@ class HomeFragment : Fragment() {
             }
 
             override fun onFailure(call: Call<FatchProduct>, t: Throwable) {
-                if (call.isCanceled) {
-                    Log.d("HomeFragment", "Request was canceled")
-                    return
-                }
-
                 CoroutineScope(Dispatchers.Main).launch {
+                    val binding = _binding
+                    if (binding == null) return@launch  // Check binding before accessing UI
+
                     binding.loadingProgressBar.visibility = View.GONE
                     binding.productGrid.visibility = View.GONE
                     showToast("Error fetching products: ${t.localizedMessage}")
-                    Log.e("HomeFragment", "Error fetching products: ${t.localizedMessage}")
                 }
             }
         })
     }
 
     private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+        context?.let {
+            Toast.makeText(it, message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         currentApiCall?.cancel()
-        currentApiCall = null
         _binding = null
         adapter = null
     }

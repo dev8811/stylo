@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -24,24 +23,33 @@ import com.google.android.material.tabs.TabLayoutMediator
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.ref.WeakReference
 
 class Product_detail_Activity : AppCompatActivity() {
 
-    private lateinit var binding: ActivityProductDetailBinding
+    private var _binding: ActivityProductDetailBinding? = null
+    private val binding get() = _binding!!
+
     private var selectedSize: String? = null
-    private var selectedColor: String? = null
     private var quantity = 1
     private var CategoryID = 0
     private var userId: Int? = null
     private var basePrice: Double = 0.0
     private val productList = mutableListOf<Product>()
     private var adapter: ProductAdapter? = null
+    private var currentProductsCall: Call<FatchProduct>? = null
+    private var currentCartCall: Call<CartItemResponse>? = null
+    private var activityReference: WeakReference<Product_detail_Activity>? = null
 
+    @SuppressLint("SetTextI18n")
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityProductDetailBinding.inflate(layoutInflater)
+        _binding = ActivityProductDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        activityReference = WeakReference(this)
+
         // Retrieve user data from SharedPreferences
         val sharedPreferences = getSharedPreferences("UserPrefs", Context.MODE_PRIVATE)
         val userIdString = sharedPreferences.getString("userId", null)
@@ -70,7 +78,6 @@ class Product_detail_Activity : AppCompatActivity() {
             return
         }
         CategoryID = product.category_id
-
 
         // Set base price
         basePrice = product.price.toDouble()
@@ -102,10 +109,12 @@ class Product_detail_Activity : AppCompatActivity() {
                 Toast.makeText(this, "Please select a size", Toast.LENGTH_SHORT).show()
             }
         }
-
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupActionBar() {
+        val binding = _binding ?: return
+
         val backButton = binding.myToolbar.btnBack
         val titleTextView = binding.myToolbar.tvTitle
         val notificationButton = binding.myToolbar.btnNotification
@@ -122,6 +131,8 @@ class Product_detail_Activity : AppCompatActivity() {
     }
 
     private fun setupSizeOptions(product: Product) {
+        val binding = _binding ?: return
+
         binding.chipGroupTechnologies.removeAllViews()
 
         val sizes = product.sizes
@@ -145,7 +156,10 @@ class Product_detail_Activity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupStockIndicator(product: Product) {
+        val binding = _binding ?: return
+
         if (product.is_active) {
             binding.stockIndicator.visibility = View.GONE
         } else {
@@ -158,7 +172,10 @@ class Product_detail_Activity : AppCompatActivity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun setupQuantitySelector() {
+        val binding = _binding ?: return
+
         binding.quantityText.text = quantity.toString()
         binding.productPrice.text = "₹${basePrice * quantity}"
 
@@ -178,6 +195,8 @@ class Product_detail_Activity : AppCompatActivity() {
     }
 
     private fun setupProductImagePager(product: Product) {
+        val binding = _binding ?: return
+
         val imageUrls = mutableListOf<String>()
 
         if (product.all_images.isNotEmpty()) {
@@ -197,6 +216,8 @@ class Product_detail_Activity : AppCompatActivity() {
     }
 
     private fun setupProductRecyclerView() {
+        val binding = _binding ?: return
+
         // Make sure the recyclerView exists in your layout
         binding.productGrid.layoutManager = GridLayoutManager(this, 2)
         binding.productGrid.setHasFixedSize(true)
@@ -217,17 +238,26 @@ class Product_detail_Activity : AppCompatActivity() {
     }
 
     private fun fetchProducts(categoryId: String) {
-        ApiClient.apiService.getProducts(categoryId).enqueue(object : Callback<FatchProduct> {
+        val binding = _binding ?: return
+
+        // Cancel any pending request before starting a new one
+        currentProductsCall?.cancel()
+
+        currentProductsCall = ApiClient.apiService.getProducts(categoryId)
+        currentProductsCall?.enqueue(object : Callback<FatchProduct> {
             @SuppressLint("NotifyDataSetChanged")
             override fun onResponse(call: Call<FatchProduct>, response: Response<FatchProduct>) {
+                val activity = activityReference?.get() ?: return
+                val currentBinding = activity._binding ?: return
+
                 // Hide loading state if needed
-                binding.progressBar.visibility = View.GONE
+                currentBinding.progressBar.visibility = View.GONE
 
                 if (response.isSuccessful) {
                     response.body()?.let { fetchedData ->
                         // Get the current product ID
                         val currentProductId =
-                            intent.getParcelableExtra<Product>("PRODUCT")?.product_id ?: -1
+                            activity.intent.getParcelableExtra<Product>("PRODUCT")?.product_id ?: -1
 
                         // Filter out the current product from the similar products list
                         val filteredProducts =
@@ -240,55 +270,74 @@ class Product_detail_Activity : AppCompatActivity() {
 
                         // Show/hide empty state
                         if (productList.isEmpty()) {
-                            binding.emptyStateView.visibility = View.VISIBLE
-                            binding.productGrid.visibility = View.GONE
+                            currentBinding.emptyStateView.visibility = View.VISIBLE
+                            currentBinding.productGrid.visibility = View.GONE
                         } else {
-                            binding.emptyStateView.visibility = View.GONE
-                            binding.productGrid.visibility = View.VISIBLE
+                            currentBinding.emptyStateView.visibility = View.GONE
+                            currentBinding.productGrid.visibility = View.VISIBLE
                         }
-                    } ?: showToast("No products found")
+                    } ?: activity.showToast("No products found")
                 } else {
-                    showToast("Failed to load products: ${response.message()}")
-                    Log.e("ProductDetail", "Error: ${response.code()} - ${response.message()}")
+                    activity.showToast("Failed to load products: ${response.message()}")
                 }
             }
 
             override fun onFailure(call: Call<FatchProduct>, t: Throwable) {
-                // Hide loading state
-                binding.progressBar.visibility = View.GONE
+                val activity = activityReference?.get() ?: return
+                val currentBinding = activity._binding ?: return
 
-                showToast("Error fetching products: ${t.localizedMessage}")
-                Log.e("ProductDetail", "Error fetching products", t)
+                // Hide loading state
+                currentBinding.progressBar.visibility = View.GONE
+
+                if (!call.isCanceled) {
+                    activity.showToast("Error fetching products: ${t.localizedMessage}")
+                }
             }
         })
     }
 
     private fun addToCart(userId: Int, productId: Int, quantity: Int) {
-        ApiClient.apiService.addToCart("add_item", userId, productId, quantity)
-            .enqueue(object : Callback<CartItemResponse> {
-                override fun onResponse(
-                    call: Call<CartItemResponse>,
-                    response: Response<CartItemResponse>
-                ) {
-                    if (response.isSuccessful && response.body() != null) {
-                        showToast("added to cart successfully")
-                        //     showToast(response.body()?.message.toString())
-                    } else {
-                        val errorMessage = response.errorBody()?.string() ?: "Unknown error"
-                        showToast("Failed to add product to cart: $errorMessage")
-                        Log.e("AddToCart", "Error: $errorMessage")
-                    }
-                }
+        // Cancel any pending request before starting a new one
+        currentCartCall?.cancel()
 
-                override fun onFailure(call: Call<CartItemResponse>, t: Throwable) {
-                    showToast("Network error: ${t.localizedMessage}")
-                    Log.e("AddToCart", "Network Error: ${t.localizedMessage}", t)
+        currentCartCall = ApiClient.apiService.addToCart("add_item", userId, productId, quantity)
+        currentCartCall?.enqueue(object : Callback<CartItemResponse> {
+            override fun onResponse(
+                call: Call<CartItemResponse>,
+                response: Response<CartItemResponse>
+            ) {
+                val activity = activityReference?.get() ?: return
+
+                if (response.isSuccessful && response.body() != null) {
+                    activity.showToast("added to cart successfully")
+                    //     showToast(response.body()?.message.toString())
+                } else {
+                    val errorMessage = response.errorBody()?.string() ?: "Unknown error"
+                    activity.showToast("Failed to add product to cart: $errorMessage")
                 }
-            })
+            }
+
+            override fun onFailure(call: Call<CartItemResponse>, t: Throwable) {
+                val activity = activityReference?.get() ?: return
+
+                if (!call.isCanceled) {
+                    activity.showToast("Network error: ${t.localizedMessage}")
+                }
+            }
+        })
     }
-
 
     private fun showToast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Cancel any pending network requests
+        currentProductsCall?.cancel()
+        currentCartCall?.cancel()
+        _binding = null
+        adapter = null
+        activityReference?.clear()
     }
 }

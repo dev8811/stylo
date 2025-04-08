@@ -4,19 +4,20 @@ import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.Stylo.stylo.RetrofitApi.Category
 import com.Stylo.stylo.databinding.ItemCategoryTabBinding
 
 class CategoryAdapter(
-    private val categoryList: List<String>,
-    private val onCategorySelected: (Int) -> Unit // Callback for category selection
+    private val categoryList: List<Category>,
+    private val onCategorySelected: (Category) -> Unit // Callback with full Category object
 ) : RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
 
-    private var selectedPosition = 0 // Default selection
+    private var selectedPosition = 0
 
     inner class CategoryViewHolder(val binding: ItemCategoryTabBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(categoryName: String, position: Int) {
-            binding.textViewCategory.text = categoryName
+        fun bind(category: Category, position: Int) {
+            binding.textViewCategory.text = category.name
 
             // Change UI based on selection
             if (position == selectedPosition) {
@@ -27,11 +28,13 @@ class CategoryAdapter(
                 binding.textViewCategory.setBackgroundColor(Color.TRANSPARENT)
             }
 
-            // Handle click event
+            // Handle click
             binding.textViewCategory.setOnClickListener {
-                selectedPosition = adapterPosition  // Update selection
-                notifyDataSetChanged() // Refresh RecyclerView
-                onCategorySelected(selectedPosition) // Notify HomeFragment
+                val previousSelected = selectedPosition
+                selectedPosition = adapterPosition
+                notifyItemChanged(previousSelected)
+                notifyItemChanged(selectedPosition)
+                onCategorySelected(category) // Pass selected category to fragment
             }
         }
     }

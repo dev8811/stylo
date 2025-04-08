@@ -66,11 +66,25 @@ data class CartItem(
     @SerializedName("product_name") val productName: String,
     @SerializedName("description") val description: String,
     @SerializedName("price") val price: Double,
-    @SerializedName("quantity") val quantity: Int,
+    @SerializedName("quantity") var quantity: Int,
     @SerializedName("subtotal") val subtotal: Double,
     @SerializedName("stock_quantity") val stockQuantity: Int,
     @SerializedName("primary_image") val primaryImage: String,
     @SerializedName("all_images") val allImages: List<String>,
     @SerializedName("is_active") val isActive: Boolean,
-    @SerializedName("sizes") val sizes: List<String>
+    @SerializedName("sizes") val sizes: List<String>,
+    var isLoading: Boolean = false
 )
+data class CategoryResponse(
+    val status: Boolean,
+    val message: String,
+    val data: List<Category>
+)
+
+// Category.kt
+data class Category(
+    val category_id: Int,
+    val name: String
+)
+
+

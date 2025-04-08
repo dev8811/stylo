@@ -3,7 +3,6 @@ package com.Stylo.stylo.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -39,18 +38,22 @@ class CartAdapter(
     inner class CartViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val ivProductImage: ImageView = itemView.findViewById(R.id.ivProductImage)
         private val tvProductName: TextView = itemView.findViewById(R.id.tvProductName)
-        private val tvPrice: TextView = itemView.findViewById(R.id.tvPrice)
+        private val tvProductSize: TextView = itemView.findViewById(R.id.tvProductSize)
+        private val tvProductPrice: TextView = itemView.findViewById(R.id.tvProductPrice)
         private val tvQuantity: TextView = itemView.findViewById(R.id.tvQuantity)
-        private val tvSubtotal: TextView = itemView.findViewById(R.id.tvSubtotal)
-        private val btnMinus: Button = itemView.findViewById(R.id.btnMinus)
-        private val btnPlus: Button = itemView.findViewById(R.id.btnPlus)
+        private val btnDecrease: ImageButton = itemView.findViewById(R.id.btnDecrease)
+        private val btnIncrease: ImageButton = itemView.findViewById(R.id.btnIncrease)
         private val btnRemove: ImageButton = itemView.findViewById(R.id.btnRemove)
 
         fun bind(item: CartItem) {
             tvProductName.text = item.productName
-            tvPrice.text = "₹${item.price}"
+
+            // Add size information if available
+            tvProductSize.text = item.sizes?.let { "Size $it" } ?: ""
+
+            // Format price with currency symbol
+            tvProductPrice.text = "₹${item.price}"
             tvQuantity.text = item.quantity.toString()
-            tvSubtotal.text = "₹${item.subtotal}"
 
             // Load product image using Glide
             Glide.with(itemView.context)
@@ -58,11 +61,11 @@ class CartAdapter(
                 .placeholder(R.drawable.placeholder_image)
                 .into(ivProductImage)
 
-            btnPlus.setOnClickListener {
+            btnIncrease.setOnClickListener {
                 onQuantityChange(item, item.quantity + 1)
             }
 
-            btnMinus.setOnClickListener {
+            btnDecrease.setOnClickListener {
                 if (item.quantity > 1) {
                     onQuantityChange(item, item.quantity - 1)
                 }

@@ -1,12 +1,15 @@
 package com.Stylo.stylo.RetrofitApi
 
 import androidx.annotation.Nullable
+import com.Stylo.stylo.data.SearchResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
+import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiInterface {
 
@@ -66,5 +69,16 @@ interface ApiInterface {
     fun toggleWishlist(
         @Body body: Map<String, Int>
     ): Call<BaseResponse>
+
+    @GET("fatchCategorie.php")
+    fun getCategories(): Call<CategoryResponse>
+
+    @GET("search_api.php")
+    fun searchProducts(
+        @Query("name") searchQuery: String,
+        @Query("category_id") categoryId: Int? = null,
+        @Query("limit") limit: Int = 50,
+        @Query("offset") offset: Int = 0
+    ): Call<SearchResponse>
 
 }
